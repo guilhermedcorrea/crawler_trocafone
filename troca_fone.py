@@ -8,10 +8,7 @@ from selenium.webdriver.support import expected_conditions as EC
 import re
 from typing import Literal, List, Generator,Any
 from itertools import chain, zip_longest
-from urllib import parse
 import os
-from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.common.keys import Keys
 import pandas as pd
 
 
