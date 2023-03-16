@@ -35,7 +35,7 @@ def scroll_page() -> None:
             match=True
 
 
-def get_sub_categorias():
+def get_sub_categorias() -> Generator[str, None, None]:
     driver.implicitly_wait(7)
     driver.get("https://www.trocafone.com.br/")
 
@@ -55,43 +55,10 @@ def get_sub_categorias():
         except Exception as e:
             print(e)
 
-
-def extract_products(*args, **kwargs):
-    driver.implicitly_wait(7)
-    for arg in args:
-        driver.get(arg)
-        time.sleep(1)
-    
-def get_url_produtos():
-    driver.implicitly_wait(7)
-    categorias = get_sub_categorias()
-    try:
-        for categoria in categorias:
-            driver.get(categoria)
-            scroll_page()
-           
-            produtos_url = driver.find_elements(By.XPATH,'//*[@id="gallery-layout-container"]/div/section/a')
-            p_urls = [urls.get_attribute("href") for urls in produtos_url]
-            extract_products(*p_urls)
-            
-    except Exception as e:
-        print(e)
-
-
-lista_teste = ["https://www.trocafone.com.br/iphone-11-64-gb/p"
-               ,"https://www.trocafone.com.br/samsung-galaxy-s21-ultra-5g-256-gb/p"
-               ,"https://www.trocafone.com.br/galaxy-watch4-classic-bt-46mm-preto-bom/p"
-               "https://www.trocafone.com.br/samsung-galaxy-z-fold3-512-gb/p"
-               ,"https://www.trocafone.com.br/motorola-moto-g9-play-64-gb/p",
-               "https://www.trocafone.com.br/motorola-one-macro-64-gb/p"
-               ,"https://www.trocafone.com.br/iphone-11-pro-256-gb/p"
-               ,"https://www.trocafone.com.br/iphone-xr-256-gb/p"]
-              
-
-def produto_get():
+def extract_item(*args, **kwargs) -> Any:
     lista_dict_produtos = []
     driver.implicitly_wait(7)
-    for lista in lista_teste:
+    for lista in args:
         driver.get(lista)
         time.sleep(1)
         dict_produtos = {}
@@ -155,12 +122,31 @@ def produto_get():
         lista_dict_produtos.append(dict_produtos)
     
     
-
     return lista_dict_produtos
 
 
-listas = produto_get()
+def get_url_produtos() -> list:
+    lista_produtos = []
+    driver.implicitly_wait(7)
+    categorias = get_sub_categorias()
+    try:
+        for categoria in categorias:
+            driver.get(categoria)
+            scroll_page()
+           
+            produtos_url = driver.find_elements(By.XPATH,'//*[@id="gallery-layout-container"]/div/section/a')
+            p_urls = [urls.get_attribute("href") for urls in produtos_url]
+            new_dicts = extract_item(*p_urls)
+            lista_produtos.append(new_dicts)
 
-data = pd.DataFrame(listas)
-data.to_excel("produtosprecos.xlsx")
-print(listas)
+            
+    except Exception as e:
+        print(e)
+    
+    return lista_produtos
+
+
+produtos = get_url_produtos()
+
+data = pd.DataFrame()
+data.to_excel("lista_produtos_trocafone.xlsx")
